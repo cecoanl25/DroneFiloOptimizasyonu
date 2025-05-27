@@ -11,7 +11,7 @@ def rotaBelirle(gelinen_yol, mevcut_node): #Başlangıçtan hedefe kadar olan yo
     while mevcut_node in gelinen_yol:
         mevcut_node = gelinen_yol[mevcut_node]
         rota.append(mevcut_node) #Önceki nodelara geri dönülerek rota çıkarılır.
-    return rota[::-1] #Rota ters çevrilerek başlangıçtan hedefe olacak şekilde döndürülür.
+    return rota[::-1] #Rota ters çevrilerek başlangıçtan hedefe olacak şekilde döndürülür
 
 #A* ALGORİTMASI ÇALIŞMA MANTIĞI
 
