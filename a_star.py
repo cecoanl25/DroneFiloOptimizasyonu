@@ -1,6 +1,5 @@
 import heapq
 import math
-from graph import get_dynamic_graph_for, yazdir_dynamic_graph
 import json
 
 def heuristic(pos1, pos2): #İki nokta arasındaki net mesafeyi hesaplar. Bu mesafeyi hesaplattırmamızın sebebi, en uygun rota belirleme işleminde tahmini maliyet hesabını yaptırmaktır.
@@ -82,56 +81,3 @@ with open("randomdata.json", "r") as dosya: #Veriler okunur.
 drones = veri["drones"]
 deliveries = veri["deliveries"]
 no_fly_zones = veri["no_fly_zones"]
-
-# #Burada bir drone ve o drone için bir teslimat noktası belirlenir.
-# drone_index = 1
-# target_delivery_index = 2
-# baslangic = drone_index #Başlangıç düğümü dronenun bulunduğu konum olarak ayarlanır.
-# hedef = target_delivery_index + len(drones) # Hedef düğüm teslimat nodedu (dronelar başta olduğu için index kaydırılır. Yani işin temelinde teslimatlar, id karışıklığı yaşanmaması için droneların toplamından sonra id alır.)
-
-# node_konumlari = {} # Tüm düğüm noktalarının (drone + teslimat) pozisyon bilgileri sözlük olarak oluşturulur.
-# for i, drone in enumerate(drones):
-#     node_konumlari[i] = tuple(drone["start_pos"])  #Droneların başlangıç pozisyonları atanır.
-# for i, teslimat in enumerate(deliveries):
-#     node_konumlari[i + len(drones)] = tuple(teslimat["pos"]) #Teslimat noktalarının konumları atanır. (index kaydırılarak)
-
-# graf = get_dynamic_graph_for(drone_index, target_delivery_index) #Seçilen drone ve hedef teslimat noktasına özel olarak dinamik graf yapısı oluşturulur
-# yazdir_dynamic_graph(graf) #Oluşturulan grafın terminal tarafına yazdırma fonksiyonu çağrılır.
-
-# rota = a_star(graf, baslangic, hedef, node_konumlari, drone_index) #A* algoritması çağrılır ve elde edilen rota değişkenine atanır.
-
-# print("\nRota:", end=" ") #Rota bilgisi terminalde yazdırılır.
-# if rota is None:
-#     print("Rota Bulunamadı")  #Eğer hedefe giden geçerli bir rota bulunamazsa bilgi verilir.
-# else:
-#     for node in rota:
-#         if node < len(drones): #Node bir drone ise
-#             print(f"D{drones[node]['id']}", end=" → ")
-#         else:  #Node bir teslimat noktası ise
-#             teslimat_index = node - len(drones)
-#             print(f"T{deliveries[teslimat_index]['id']}", end=" → ")
-#     print("End") #Rota yazdırımı tamamlandığında (Buradaki rota yazdırma işleminde okunaklılık sağlanmıştır.)
-
-#     #Rota boyunca toplam maliyet ve enerji tüketimi hesaplanır.
-#     toplam_maliyet = 0
-#     kalan_batarya = drones[drone_index]["battery"]
-
-#     for i in range(len(rota) - 1):
-#         mevcut_node = rota[i]
-#         sonraki_node = rota[i + 1]
-
-#         for komsu_node, maliyet, enerji in graf[mevcut_node]:
-#             if komsu_node == sonraki_node:
-#                 toplam_maliyet += maliyet #Rota üzerindeki kenar maliyetleri toplanır.
-#                 kalan_batarya -= enerji #Harcanan enerji toplamdan düşülür.
-#                 break
-
-#     #Sonuçlar terminale yazdırılır.
-#     print("Toplam rota maliyeti:", round(toplam_maliyet, 2))
-#     print("Drone batarya kapasitesi:", round(drones[drone_index]["battery"]), "mAh")
-#     print("Harcanan batarya:", round(drones[drone_index]["battery"] - kalan_batarya, 2), "mAh")
-#     print("Kalan batarya:", round(kalan_batarya, 2), "mAh")
-
-# #Elde edilen rota ve düğüm koordinatları, görselleştirme işlemi için global olarak tutulur.
-# rota_sonucu = rota
-# node_konumlari_sonucu = node_konumlari
