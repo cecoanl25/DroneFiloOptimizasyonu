@@ -1,5 +1,5 @@
 import json
-from graph import get_dynamic_graph_for
+from DroneFiloOptimizasyonu.graph import get_dynamic_graph_for
 from a_star import a_star
 from rich import print
 import math

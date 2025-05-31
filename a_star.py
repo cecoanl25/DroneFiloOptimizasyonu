@@ -1,6 +1,6 @@
 import heapq
 import math
-from graph import get_dynamic_graph_for, yazdir_dynamic_graph
+from DroneFiloOptimizasyonu.graph import get_dynamic_graph_for, yazdir_dynamic_graph
 import json
 
 def heuristic(pos1, pos2): #İki nokta arasındaki net mesafeyi hesaplar. Bu mesafeyi hesaplattırmamızın sebebi, en uygun rota belirleme işleminde tahmini maliyet hesabını yaptırmaktır.
