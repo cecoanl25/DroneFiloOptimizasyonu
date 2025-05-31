@@ -54,9 +54,13 @@ def get_dynamic_graph_for(drone_index: int, target_delivery_index: int):
                     distance_to_intersection = LineString([start_pos, (first_point.x, first_point.y)]).length
                 else:
                     distance_to_intersection = mesafe / 2
-                gecis_suresi = distance_to_intersection / drone_speed
-                gecis_saati = (datetime.strptime("10:00:00", "%H:%M:%S") + timedelta(seconds=gecis_suresi)).strftime("%H:%M:%S")
-                if zaman_cakisiyor(zone["active_time"], gecis_saati):
+                start_str, end_str = deliveries[target_delivery_index]["time_window"]
+                fmt = "%H:%M"
+                start_dt = datetime.strptime(start_str, fmt)
+                end_dt = datetime.strptime(end_str, fmt)
+                tahmini_zaman_dt = start_dt + (end_dt - start_dt) / 2
+                tahmini_zaman = tahmini_zaman_dt.strftime("%H:%M:%S")
+                if zaman_cakisiyor(zone["active_time"], tahmini_zaman):
                     no_fly_penalty += 1000
                  
 
@@ -90,9 +94,13 @@ def get_dynamic_graph_for(drone_index: int, target_delivery_index: int):
                         distance_to_intersection = LineString([tuple(d1["pos"]), (first_point.x, first_point.y)]).length
                     else:
                         distance_to_intersection = mesafe / 2
-                    gecis_suresi = distance_to_intersection / drone_speed
-                    gecis_saati = (datetime.strptime("10:00:00", "%H:%M:%S") + timedelta(seconds=gecis_suresi)).strftime("%H:%M:%S")
-                    if zaman_cakisiyor(zone["active_time"], gecis_saati):
+                    start_str, end_str = deliveries[target_delivery_index]["time_window"]
+                    fmt = "%H:%M"
+                    start_dt = datetime.strptime(start_str, fmt)
+                    end_dt = datetime.strptime(end_str, fmt)
+                    tahmini_zaman_dt = start_dt + (end_dt - start_dt) / 2
+                    tahmini_zaman = tahmini_zaman_dt.strftime("%H:%M:%S")
+                    if zaman_cakisiyor(zone["active_time"], tahmini_zaman):
                         no_fly_penalty += 1000
                   
             maliyet += no_fly_penalty

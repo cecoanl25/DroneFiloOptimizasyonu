@@ -4,14 +4,16 @@ from datalists import Drone, DeliveryPoints, NoFlyZones
 from datetime import datetime, timedelta
 import json
 
-def randomZaman(): #Bu fonksiyon, H:M şeklinde rastgele zaman üretimi yapmaktadır. 
-    saat = random.randint(9,17)
-    dakika = random.choice([0, 15, 30, 45])
-    sure = random.randint(30,90)
-    baslangic_zamani = datetime(2025,1,1, saat, dakika)
-    bitis_zamani = baslangic_zamani + timedelta(minutes=sure) #başlangıç zamanına belirlenen random dakika eklenir ve başlangıç - bitiş zaman aralığı belirlenir.
+def randomZaman():
+    saat = random.randint(10, 17)
+    dakika = random.choice([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
+    baslangic_zamani = datetime(2025, 1, 1, saat, dakika)
+    görev_süresi = random.randint(1, 10)  # 1 ila 10 dakika arası
 
+    bitis_zamani = baslangic_zamani + timedelta(minutes=görev_süresi)
     return (baslangic_zamani.strftime("%H:%M"), bitis_zamani.strftime("%H:%M"))
+
+
 
 def randomCoordinate(): #Dörtgen şeklinde rastgele bir bölge tanımlar. Rastgele x,y değerlerine rastgele genişlik, yükseklik değerleri ekleyerek dörtgen oluşturur.
     genislik = random.randint(10, 30)
@@ -57,9 +59,9 @@ def droneListesi(adet, no_fly_listesi): #Rastgele drone oluşturan fonksiyon
 
         drone_listesi = Drone(
             id=sayac,
-            max_weight=random.uniform(3.0, 10.0),
+            max_weight=random.uniform(5.0, 10.0),
             battery=random.randint(5000, 10000),
-            speed=random.uniform(2.0, 5.0),
+            speed=random.uniform(0.5, 2.0),
             start_pos=(x, y)
         )
         droneListe.append(drone_listesi)

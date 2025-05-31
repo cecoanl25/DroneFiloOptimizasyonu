@@ -4,6 +4,23 @@ from a_star import a_star
 from rich import print
 import math
 import heapq 
+from datetime import datetime, timedelta
+
+def zaman_uygun_mu(rota, node_konumlari, hedef_time_window, drone_speed):
+    toplam_sure = 0
+    for i in range(len(rota) - 1):
+        bas = node_konumlari[rota[i]]
+        son = node_konumlari[rota[i + 1]]
+        mesafe = math.dist(bas, son)
+        toplam_sure += mesafe / drone_speed  # saniye
+
+    teslimat_suresi = toplam_sure
+
+    bas = datetime.strptime(hedef_time_window[0] + ":00", "%H:%M:%S")
+    bit = datetime.strptime(hedef_time_window[1] + ":00", "%H:%M:%S")
+    pencere_suresi = (bit - bas).total_seconds()
+
+    return teslimat_suresi <= pencere_suresi, toplam_sure
 
 def hesapla_enerji(rota, node_konumlari, agirlik=0, katsayi=10):
     enerji = 0
@@ -22,6 +39,8 @@ deliveries = veri["deliveries"]
 
 drone_rotalari_sonuc = {str(i): [] for i in range(len(drones))}
 node_konumlari = {}
+
+drone_zaman_araliklari = {i: [] for i in range(len(drones))}
 
 for i, d in enumerate(drones):
     node_konumlari[i] = tuple(d["start_pos"])
@@ -55,20 +74,38 @@ while teslimat_heap:
             print(f"[red] Reddedildi: Ağırlık {deliveries[teslimat_index]['weight']} > kapasite {drone['max_weight']}")
             continue
 
+        teslimat_bas = datetime.strptime(deliveries[teslimat_index]["time_window"][0] + ":00", "%H:%M:%S")
+        teslimat_bit = datetime.strptime(deliveries[teslimat_index]["time_window"][1] + ":00", "%H:%M:%S")
+
         graph_gidis = get_dynamic_graph_for(drone_index, teslimat_index)
         hedef_id = teslimat_index + len(drones)
-
         rota_gidis = a_star(graph_gidis, drone_index, hedef_id, node_konumlari, drone_index)
         if rota_gidis is None:
             print("[red] Reddedildi: A* rota bulunamadı.")
             continue
 
+        zaman_uygun, teslim_sure = zaman_uygun_mu(rota_gidis, node_konumlari, deliveries[teslimat_index]["time_window"], drone["speed"])
+        if not zaman_uygun:
+            print("[red] Reddedildi: Teslimat zaman penceresine uymuyor.")
+            continue
+
+        gorev_bas = teslimat_bas
+        gorev_bit = gorev_bas + timedelta(seconds=teslim_sure * 2)
+
+        uyusmazlik = False
+        for onceki_bas, onceki_bit in drone_zaman_araliklari[drone_index]:
+            if not (gorev_bit <= onceki_bas or gorev_bas >= onceki_bit):
+                uyusmazlik = True
+                break
+
+        if uyusmazlik:
+            print("[red] Reddedildi: Zaman aralığı çakışıyor (gidiş + dönüş süresiyle).")
+            continue
+
         agirlik = deliveries[teslimat_index]["weight"]
         enerji_gidis = hesapla_enerji(rota_gidis, node_konumlari, agirlik)
-
         rota_donus = list(reversed(rota_gidis))
         enerji_donus = hesapla_enerji(rota_donus, node_konumlari, agirlik=0)
-
         toplam_enerji = enerji_gidis + enerji_donus
 
         if toplam_enerji > kalan_batarya[drone_index]:
@@ -98,6 +135,8 @@ while teslimat_heap:
         drone_rotalari_sonuc[str(en_iyi_drone)].append(en_iyi_donus)
         kalan_batarya[en_iyi_drone] -= en_iyi_enerji
         tamamlanmamis_teslimatlar.remove(teslimat_index)
+        drone_zaman_araliklari[en_iyi_drone].append((gorev_bas, gorev_bit))
+
         print(f"[green][bold] Teslimat {teslimat_index}, Drone {en_iyi_drone} tarafından üstlenildi.")
         print("[cyan][bold] Rota:", end=" ")
         for node in en_iyi_gidis:
@@ -123,7 +162,6 @@ while teslimat_heap:
     if not atandi:
         print("\nAtanabilecek başka teslimat kalmadı.")
         break
-
 
 print("\n[bold]---------- GÖREV ÖZETİ ----------")
 for k, rotalar in drone_rotalari_sonuc.items():
