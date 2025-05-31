@@ -59,7 +59,7 @@ def droneListesi(adet, no_fly_listesi): #Rastgele drone oluşturan fonksiyon
             id=sayac,
             max_weight=random.uniform(3.0, 10.0),
             battery=random.randint(5000, 10000),
-            speed=random.uniform(50.0, 150.0),
+            speed=random.uniform(2.0, 5.0),
             start_pos=(x, y)
         )
         droneListe.append(drone_listesi)
