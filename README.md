@@ -1,99 +1,99 @@
+
 # 🚁 Drone Filo Teslimat Simülasyonu
 
-Bu proje, dinamik kısıtların olduğu ortamlarda bir drone filosunun teslimat görevlerini en verimli şekilde gerçekleştirmesini amaçlayan bir rota planlama sistemidir. Sistem; enerji sınırları, teslimat öncelikleri, zaman pencereleri ve uçuşa yasak bölgeler gibi çeşitli değişkenleri dikkate alarak hem lokal (A*) hem global (Genetik Algoritma) düzeyde optimizasyon yapar.
+Bu proje, dinamik kısıtlar altında birden fazla drone’un teslimat görevlerini en uygun şekilde gerçekleştirmesini amaçlar. Sistem, **zaman pencereleri**, **batarya sınırlamaları**, **öncelikler** ve **uçuşa yasak bölgeler** gibi gerçekçi kısıtları dikkate alır. Simülasyon hem **A\*** algoritması hem de **Genetik Algoritma** (GA) ile gerçekleştirilir. 
 
-![Drone Teslimat Rotaları Görünümü](images/drone_routes.png)
+## 🎯 Temel Özellikler
 
-## 🧠 Kullanılan Yöntemler
+- 🧠 **A\***: Her teslimat için en uygun rotayı belirler. Zaman, enerji ve kısıtlar göz önüne alınır.
+- 🧬 **Genetik Algoritma**: Tüm teslimatları global düzeyde en iyi şekilde dağıtır.
+- ⛔ **No-Fly Zones**: Belirli saatlerde aktif olan bölgeler, rotaların oluşumunu etkiler.
+- ⏱️ **Gerçek Zamanlı Simülasyon**: Teslimatlar zaman akışına göre animasyonla gösterilir.
+- 🔋 **Enerji Takibi**: Drone’ların kalan batarya seviyeleri hesaplanır ve görsel olarak gösterilir.
 
-- **A* Algoritması:** Her bir teslimat için en uygun rotayı belirler.
-- **Genetik Algoritma:** Drone-görev eşleştirmelerini sistem genelinde optimize eder.
-
-Tüm algoritmalar, batarya sınırlamaları, zaman kısıtları ve uçuşa yasak bölgeler gibi gerçek dünya kısıtlarını dikkate alarak çalışır.
-
-## 🗂️ Proje Yapısı
+## 📁 Proje Yapısı
 
 ```
 .
-├── main.py               # Simülasyonun ana kontrol dosyası
-├── data_generator.py     # Drone, teslimat ve yasak bölge verisi üretimi
-├── delivery_planner.py   # A* ve Genetik Algoritma uygulaması
-├── visualizer.py         # Harita üzerinde görselleştirme
-├── randomdata.json       # Rastgele oluşturulan senaryo verileri
-└── README.md             # Proje açıklamaları (bu dosya)
+├── ga_gorsel.py            # GA çözümünü görselleştirir (zamanlı teslimat çizimi)
+├── gorsel.py               # A* çözümünü zaman akışına göre animasyonla gösterir
+├── graph.py                # Uçuş grafı ve yasaklı bölge kesişim hesaplamaları
+├── a_star.py               # A* algoritması uygulaması
+├── multi_a.py              # A* temelli görev atama motoru
+├── genetic_algorithm.py    # Genetik algoritma sınıfı ve çözüm üretimi
+├── kıyas.py                # A* vs GA karşılaştırması ve süre analizi
+├── randomdata.py           # Rastgele senaryo üretimi (drone, görev, bölge)
+├── datalists.py            # Veri sınıfları (Drone, Teslimat, Yasaklı Bölge)
+├── randomdata.json         # Senaryo verisi (dinamik üretilir)
+└── README.md               # Bu dosya
 ```
 
-## ⚙️ Kurulum ve Çalıştırma
+## ▶️ Kurulum ve Çalıştırma
 
 1. Gerekli kütüphaneleri yükleyin:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Simülasyonu çalıştırın:
+2. Senaryo verisi oluşturmak için:
+
 ```bash
-python main.py
+python randomdata.py
 ```
 
-Simülasyon çalıştığında, oluşturulan senaryo `randomdata.json` dosyasına kaydedilir. Drone rotaları ve teslimatlar terminalde ve görselleştirme ekranında gösterilir.
+3. Genetik Algoritma + görselleştirme çalıştırmak için:
 
-## 📊 Çıktı Açıklamaları
+```bash
+python ga_gorsel.py
+```
 
-### Rota ve Teslimat Görselleştirmesi
-- Her drone farklı bir renk ile gösterilir.
-- Başlangıç noktaları üçgen ikonlarla, teslimat hedefleri daire ikonlarla ifade edilir.
-- Uçuşa yasak bölgeler harita üzerinde belirtilir.
+4. A* + görselleştirme çalıştırmak için:
 
-### Batarya ve Zaman Uyumları
-- Rotalar sadece mesafeye göre değil, batarya seviyesi ve zaman pencereleri göz önüne alınarak belirlenir.
-- Bataryası yetmeyen veya zaman uyumu olmayan görevler atlanır.
+```bash
+python gorsel.py
+```
 
-## 🔧 Sistem Mimarisi
+## 🧪 Simülasyon Açıklamaları
 
-### 1. Veri Üretimi
-- Her drone için farklı kapasite, hız ve batarya verisi rastgele üretilir.
-- Teslimatlar ağırlık, öncelik ve zaman penceresi gibi özelliklerle oluşturulur.
-- Uçuşa yasak bölgeler belirli zaman aralıklarında aktiftir.
+### 🎥 Gerçek Zamanlı Görsel Akış
 
-### 2. Rota Ağı (Graf)
-- Her nokta bir düğüm, olası yollar bir kenar olarak modellenir.
-- Rota maliyetleri: mesafe + ağırlık + yasak bölge etkisi.
+- Simülasyon saati 10:00’da başlar.
+- Teslimatlar yalnızca kendi zaman penceresinde çizilir.
+- Aynı anda en fazla 3 görev aktif olarak gösterilir.
+- Yasaklı bölgeler **aktif olduklarında kırmızı**, **pasif olduklarında gri** olarak çizilir.
 
-### 3. A* ile Rota Belirleme
-- Enerji tüketimi, batarya durumu ve zaman uyumu dikkate alınır.
-- Geçersiz rotalar (örneğin yasak bölgeyle kesişen) elenir.
+### 🛰️ Drone – Teslimat Atamaları
 
-### 4. Genetik Algoritma ile Görev Dağılımı
-- Geçerli görev dizileri popülasyon olarak değerlendirilir.
-- Uygunluk: teslimat sayısı, enerji kullanımı, kural uyumu.
-- Çaprazlama & mutasyon ile yeni çözümler üretilir.
+- Her teslimat için ağırlık, zaman ve enerji uygunluğu kontrol edilir.
+- Zaman penceresiyle çakışan görevler atlanır.
+- Enerji yetersizse görev reddedilir.
+- Genetik algoritma, teslimatların maksimum verimle dağılımını sağlar.
 
-### 5. Teslimat Planlaması
-- Her teslimat için en uygun drone seçilir.
-- Zaman çakışmaları ve batarya uygunluğu kontrol edilir.
-- Başarılı atama sonrası drone’un bataryası güncellenir.
+## 📈 Özet Çıktılar
 
-### 6. Görselleştirme
-- Başlangıç noktaları, hedefler ve rotalar görsel olarak çizilir.
-- Uçuşa yasak bölgeler harita üzerinde vurgulanır.
+Her iki algoritma sonunda:
 
-## 🔍 Önemli Notlar
+- Toplam teslimat sayısı
+- Tamamlanma oranı
+- Toplam ve ortalama enerji tüketimi
+- Acil teslimatların durumu
 
-- Veriler her çalıştırmada değişkendir.
-- Uçuşa yasak bölgeler belirli saatlerde aktiftir.
-- Batarya veya zaman uyumsuzluğu olan görevler atlanır.
-- Görevler zaman çakışmalarına göre planlanır.
+metrikleri yazdırılır.
 
-## 📁 Görseller
+## 🗺️ Görseller 
 
-> Görseller `images/` klasörüne yerleştirilmelidir:
-
-- `drone_routes.png`: Genel teslimat rotaları
-- `map.png`: Detaylı görev ve bölge görünümü
-- `timeline.png`: Enerji kullanımı ve zamanlama analizi
+- `drone_routes.png`: GA çözümünden örnek rota
+- `map.png`: Genel görev haritası
+- `timeline.png`: Enerji ve zaman grafiği
 
 ---
 
-👨‍💻 **Geliştirici Notu:**  
-Bu proje, dağıtım algoritmalarının gerçek dünya senaryolarında test edilmesi ve iyileştirilmesi için geliştirilmiştir.
+📌 **Not:**  
+Veriler her çalıştırmada yeniden üretilir. Aynı sonucu elde etmek için `randomdata.json` sabitlenmelidir.  
+Simülasyon animasyonu matplotlib ile çalışır, interaktif pencere üzerinden izlenebilir.
 
+---
+
+👨‍💻 **Hazırlayan:**  
+Akıllı dağıtım sistemleri üzerinde çalışan bu proje, gerçek dünya senaryolarına uygun simülasyon ortamı oluşturmayı hedefler.
