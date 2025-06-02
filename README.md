@@ -30,7 +30,6 @@ Bu proje, dinamik kısıtlar altında birden fazla drone’un teslimat görevler
 
 ## ▶️ Kurulum ve Çalıştırma
 1. Senaryo verisi oluşturmak için:
-2. 
 ```bash
 python randomdata.py
 ```
