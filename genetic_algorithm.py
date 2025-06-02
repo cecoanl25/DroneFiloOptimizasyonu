@@ -1,11 +1,11 @@
+from datetime import datetime, timedelta
 import json
 import random
 import math
 import heapq
 import copy
 from typing import List, Dict, Tuple, Optional
-from graph import get_dynamic_graph_for
-from a_star import a_star
+from shapely import LineString, Polygon
 from rich import print
 
 class DroneRoute:
@@ -68,33 +68,64 @@ class GeneticDroneRouter:
         return total_energy
 
     def is_valid_route(self, drone_id: int, route: List[int]) -> Tuple[bool, int]:
-        """Rotanın geçerli mi"""
         violations = 0
         drone = self.drones[drone_id]
         total_energy = 0
-        
-        # Rotada teslimat noktaları var mı
-        delivery_indices = [node - len(self.drones) for node in route if node >= len(self.drones)]
-        
-        for delivery_idx in delivery_indices:
-            if delivery_idx < 0 or delivery_idx >= len(self.deliveries):
-                violations += 1
-                continue
-                
-            delivery = self.deliveries[delivery_idx]
-            
-            # Ağırlık kontrolü
-            if delivery["weight"] > drone["max_weight"]:
-                violations += 1
-            
-            # Enerji kontrolü için rota segmentini hesapla
-            segment_energy = self.calculate_route_energy(route, delivery["weight"])
+
+        for i in range(len(route) - 1):
+            current_node = route[i]
+            next_node = route[i + 1]
+
+            start_pos = self.node_positions[current_node]
+            end_pos = self.node_positions[next_node]
+            segment_line = LineString([start_pos, end_pos])
+            for zone in self.no_fly_zones:
+                polygon = Polygon(zone["coordinates"])
+                if segment_line.intersects(polygon):
+                    distance = segment_line.length
+                    speed = drone["speed"]
+                    estimated_seconds = distance / speed
+                    estimated_time = datetime.strptime("10:00:00", "%H:%M:%S") + timedelta(seconds=estimated_seconds)
+                    start_str, end_str = zone["active_time"]
+                    fmt = "%H:%M"
+                    zone_start = datetime.strptime(start_str, fmt)
+                    zone_end = datetime.strptime(end_str, fmt)
+                    if zone_start <= estimated_time <= zone_end:
+                        violations += 1
+
+
+            weight = 0
+            if current_node < len(self.drones) and next_node >= len(self.drones):
+                delivery_idx = next_node - len(self.drones)
+                if delivery_idx < 0 or delivery_idx >= len(self.deliveries):
+                    violations += 1
+                    continue
+
+                delivery = self.deliveries[delivery_idx]
+                weight = delivery["weight"]
+
+                if weight > drone["max_weight"]:
+                    violations += 1
+                speed = drone["speed"]
+                distance = math.dist(start_pos, end_pos)
+                estimated_seconds = distance / speed
+
+                start_str, end_str = delivery["time_window"]
+                fmt = "%H:%M"
+                start_time = datetime.strptime(start_str, fmt)
+                end_time = datetime.strptime(end_str, fmt)
+                estimated_time = start_time + timedelta(seconds=estimated_seconds)
+
+                if not (start_time <= estimated_time <= end_time):
+                    violations += 1
+
+            segment_energy = self.calculate_route_energy([current_node, next_node], weight)
             total_energy += segment_energy
-        
-        # Toplam enerji kontrolü
+
+        # 🔋 Toplam batarya kontrolü
         if total_energy > drone["battery"]:
             violations += 1
-        
+
         return violations == 0, violations
 
     def create_random_individual(self) -> Individual:
@@ -502,7 +533,62 @@ class GeneticDroneRouter:
             print(f"  [green]Tüm paketler başarıyla teslim edildi!")
 
 if __name__ == "__main__":
-    # Genetik algoritma çalıştır
     router = GeneticDroneRouter()
     best_solution = router.evolve()
     router.print_solution(best_solution) 
+
+
+def ga_ozet(best_solution, deliveries, drones, node_positions, urgent_deliveries):
+    total_deliveries = 0
+    total_energy = 0
+    total_urgent = len(urgent_deliveries)
+    completed_urgent = 0
+
+    print("\n[bold blue]---------- GÖREV ÖZETİ (GENETİK ALGORİTMA) ----------")
+
+    for drone_id, drone_route in best_solution.drone_routes.items():
+        route = drone_route.route
+        teslimat_sayisi = sum(1 for i in range(len(route)-1) if route[i] < len(drones) and route[i+1] >= len(drones))
+        print(f"[bold]Drone {drone_id} → [green]{teslimat_sayisi} teslimat")
+
+        drone_total = 0
+        for i in range(len(route) - 1):
+            bas = node_positions[route[i]]
+            son = node_positions[route[i + 1]]
+            mesafe = math.dist(bas, son)
+
+            if route[i] < len(drones) and route[i+1] >= len(drones):
+                delivery_idx = route[i+1] - len(drones)
+                agirlik = deliveries[delivery_idx]["weight"]
+                enerji = mesafe * (1 + agirlik / 10) * 10
+                total_deliveries += 1
+                drone_total += enerji
+
+                for p, urgent_idx in urgent_deliveries:
+                    if urgent_idx == delivery_idx:
+                        completed_urgent += 1
+            elif route[i] >= len(drones) and route[i+1] < len(drones):
+                enerji = mesafe * 1 * 10
+                drone_total += enerji
+            else:
+                enerji = mesafe * 10
+                drone_total += enerji
+
+        total_energy += drone_total
+
+    ortalama_enerji = total_energy / total_deliveries if total_deliveries > 0 else 0
+    tamamlanma_orani = total_deliveries / len(deliveries) * 100
+
+    print(f"\n[bold cyan]Toplam teslimat sayısı      : {len(deliveries)}")
+    print(f"[bold cyan]Tamamlanan teslimat sayısı  : {total_deliveries}")
+    print(f"[bold cyan]Tamamlanma oranı (%)         : {tamamlanma_orani:.1f}%")
+    print(f"[bold cyan]Toplam enerji tüketimi    : {total_energy:.2f} mAh")
+    print(f"[bold cyan]Ortalama enerji tüketimi  : {ortalama_enerji:.2f} mAh")
+
+    return {
+        "tamamlanan": total_deliveries,
+        "toplam": len(deliveries),
+        "oran": tamamlanma_orani,
+        "toplam_enerji": total_energy,
+        "ortalama_enerji": ortalama_enerji
+    }
