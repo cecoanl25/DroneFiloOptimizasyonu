@@ -27,6 +27,17 @@ Bu proje, dinamik kısıtlar altında birden fazla drone’un teslimat görevler
 ├── randomdata.json         # Senaryo verisi (dinamik üretilir)
 └── README.md               # Bu dosya
 ```
+## 🛠️ Geliştirme Ortamı
+
+Bu proje, Python 3.10 ile geliştirilmiş olup geliştirme süreci boyunca **Visual Studio Code (VSCode)** kullanılmıştır. Kullanılan başlıca kütüphaneler şunlardır:
+
+- `matplotlib`: Rotaların ve zaman akışının görselleştirilmesi.
+- `shapely`: Yasaklı bölgelerle rota kesişimlerini hesaplamak için geometrik analizler.
+- `rich`: Terminalde biçimlendirilmiş ve vurgulu çıktı oluşturmak için.
+- `heapq`: Öncelik kuyruğu tabanlı teslimat sıralamaları için.
+- `json`, `datetime`, `random`: Senaryo üretimi ve zaman pencere işlemleri için.
+
+> Kullanılan IDE: **Visual Studio Code**  
 
 ## ▶️ Kurulum ve Çalıştırma
 1. Senaryo verisi oluşturmak için:
