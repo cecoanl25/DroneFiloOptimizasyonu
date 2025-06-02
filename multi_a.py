@@ -163,6 +163,42 @@ while teslimat_heap:
         print("\nAtanabilecek başka teslimat kalmadı.")
         break
 
-print("\n[bold]---------- GÖREV ÖZETİ ----------")
-for k, rotalar in drone_rotalari_sonuc.items():
-    print(f"[bold]Drone {k} toplam {len(rotalar)//2} teslimat yaptı.")
+def multi_a_ozet(drone_rotalari: dict, delivery_sayisi: int, konumlar: dict, delivery_liste: list, drones: list):
+    total_energy = 0
+    total_deliveries = 0
+
+    print("\n[bold blue]---------- GÖREV ÖZETİ (A*) ----------")
+    for k, rotalar in drone_rotalari.items():
+        teslimat_sayisi = len(rotalar) // 2
+        print(f"[bold]Drone {k} → [green]{teslimat_sayisi} teslimat")
+
+        for i in range(0, len(rotalar), 2):
+            rota = rotalar[i]
+            teslimat_node = rota[-1]
+            teslimat_index = teslimat_node - len(drones)
+            agirlik = delivery_liste[teslimat_index]["weight"]
+            enerji_gidis = hesapla_enerji(rota, konumlar, agirlik)
+            rota_donus = rotalar[i+1]
+            enerji_donus = hesapla_enerji(rota_donus, konumlar, agirlik=0)
+            toplam = enerji_gidis + enerji_donus
+            total_energy += toplam
+            total_deliveries += 1
+
+    ortalama_enerji = total_energy / total_deliveries if total_deliveries > 0 else 0
+    tamamlanan_oran = total_deliveries / delivery_sayisi * 100
+
+    print(f"\n[bold cyan]Toplam teslimat sayısı      : {delivery_sayisi}")
+    print(f"[bold cyan]Tamamlanan teslimat sayısı  : {total_deliveries}")
+    print(f"[bold cyan]Tamamlanma oranı (%)         : {tamamlanan_oran:.1f}%")
+    print(f"[bold cyan]Toplam enerji tüketimi    : {total_energy:.2f} mAh")
+    print(f"[bold cyan]Ortalama enerji tüketimi  : {ortalama_enerji:.2f} mAh\n")
+
+    return {
+        "tamamlanan": total_deliveries,
+        "toplam": delivery_sayisi,
+        "oran": tamamlanan_oran,
+        "toplam_enerji": total_energy,
+        "ortalama_enerji": ortalama_enerji
+    }
+if __name__ == "__main__":
+    multi_a_ozet(drone_rotalari_sonuc, len(deliveries), node_konumlari, deliveries, drones)

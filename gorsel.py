@@ -12,10 +12,14 @@ drones = veri["drones"]
 deliveries = veri["deliveries"]
 no_fly_zones = veri["no_fly_zones"]
 
-# Teslimat görevlerini zamanlarına göre sırala
+def bolge_aktif_mi(active_time, sim_time):
+    start = datetime.strptime(active_time[0] + ":00", "%H:%M:%S")
+    end = datetime.strptime(active_time[1] + ":00", "%H:%M:%S")
+    return start <= sim_time <= end
+
 zamanli_gorevler = []
 for drone_id_str, rotalar in drone_rotalari_sonuc.items():
-    for i in range(0, len(rotalar), 2):  # her çift (gidiş, dönüş)
+    for i in range(0, len(rotalar), 2):
         rota = rotalar[i]
         teslimat_node = rota[-1]
         teslimat_index = teslimat_node - len(drones)
@@ -28,8 +32,6 @@ for drone_id_str, rotalar in drone_rotalari_sonuc.items():
         })
 
 zamanli_gorevler.sort(key=lambda x: x["zaman"])
-
-# Simülasyon başlangıcı
 simulasyon_zamani = datetime.strptime("10:00:00", "%H:%M:%S")
 
 fig, ax = plt.subplots(figsize=(12, 10))
@@ -38,8 +40,7 @@ plt.ylabel("Y Koordinatı")
 plt.grid(True)
 plt.axis("equal")
 
-# Sabit alanları çiz
-for i, drone in enumerate(drones):
+for drone in drones:
     x, y = drone["start_pos"]
     ax.scatter(x, y, color="blue", marker="^", s=100)
     ax.text(x + 1, y + 1, f"D{drone['id']}", fontsize=9)
@@ -49,22 +50,35 @@ for teslimat in deliveries:
     ax.scatter(x, y, color="green", marker="o", s=70)
     ax.text(x + 1, y, f"T{teslimat['id']}", fontsize=8)
 
-for zone in no_fly_zones:
-    kose_noktalari = zone["coordinates"]
-    polygon = MplPolygon(kose_noktalari, closed=True, edgecolor='red', fill=False, linewidth=2)
-    ax.add_patch(polygon)
-    xs, ys = zip(*kose_noktalari)
-    ort_x, ort_y = sum(xs) / len(xs), sum(ys) / len(ys)
-    ax.text(ort_x, ort_y, f"Z{zone['id']}", color='red', fontsize=8)
-
 renkler = ["red", "blue", "green", "orange", "purple", "magenta", "cyan"]
+bolge_patchleri = []
 lines = []
+zaman_metni = ax.text(0.02, 0.02, "", transform=ax.transAxes, fontsize=14, color="black", ha="left", va="bottom")
 
 def guncelle(frame):
-    global simulasyon_zamani, zamanli_gorevler
-    simulasyon_zamani += timedelta(minutes=10)
+    global simulasyon_zamani, zamanli_gorevler, bolge_patchleri
 
-    ax.set_title(f"Simülasyon Zamanı: {simulasyon_zamani.strftime('%H:%M:%S')}")
+    simulasyon_zamani += timedelta(minutes=2)
+    zaman_metni.set_text(f"Simülasyon Zamanı: {simulasyon_zamani.strftime('%H:%M:%S')}")
+
+    # Eski bölge patchlerini kaldır
+    for patch in bolge_patchleri:
+        patch.remove()
+    bolge_patchleri.clear()
+
+    # Güncel yasaklı bölgeleri çiz
+    for zone in no_fly_zones:
+        aktif = bolge_aktif_mi(zone["active_time"], simulasyon_zamani)
+        renk = 'red' if aktif else 'gray'
+        polygon = MplPolygon(zone["coordinates"], closed=True, edgecolor=renk, fill=False, linewidth=2)
+        ax.add_patch(polygon)
+        bolge_patchleri.append(polygon)
+        xs, ys = zip(*zone["coordinates"])
+        ort_x, ort_y = sum(xs) / len(xs), sum(ys) / len(ys)
+        txt = ax.text(ort_x, ort_y, f"Z{zone['id']}", color=renk, fontsize=8)
+        bolge_patchleri.append(txt)
+
+    # Görev çizimleri
     cizilecekler = []
     kalanlar = []
     sayac = 0
@@ -75,7 +89,7 @@ def guncelle(frame):
             sayac += 1
         else:
             kalanlar.append(gorev)
-    zamanli_gorevler = kalanlar
+    zamanli_gorevler[:] = kalanlar
 
     for gorev in cizilecekler:
         drone_id = gorev["drone_id"]
@@ -86,7 +100,7 @@ def guncelle(frame):
         line, = ax.plot(x_vals, y_vals, color=renk, linewidth=2, marker='o', label=f"Drone {drone_id}")
         lines.append(line)
 
-    return lines
+    return lines + bolge_patchleri
 
 anim = FuncAnimation(fig, guncelle, frames=100, interval=1000, repeat=False)
 plt.legend()
