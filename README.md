@@ -81,7 +81,8 @@ metrikleri yazdırılır.
 ---
 
 📌 **Not:**  
-Veriler her çalıştırmada yeniden üretilir. Aynı sonucu elde etmek için `randomdata.json` sabitlenmelidir.  
+Veriler her çalıştırmada yeniden üretilir. Aynı sonucu elde etmek için `randomdata.json` sabitlenmelidir. 
+Farklı veri setlerini randomdata.py dosyasını çalıştırarak elde edebilirsiniz.
 Simülasyon animasyonu matplotlib ile çalışır, interaktif pencere üzerinden izlenebilir.
 
 ---
