@@ -82,10 +82,10 @@ Her iki algoritma sonunda:
 metrikleri yazdırılır.
 
 ## 🗺️ Görseller 
-
-- `drone_routes.png`: GA çözümünden örnek rota
-- `map.png`: Genel görev haritası
-- `timeline.png`: Enerji ve zaman grafiği
+ A* Algoritması:
+- ![image](https://github.com/user-attachments/assets/8731d90c-2959-4921-9986-9ef6c1eb1225)
+ Genetik Algoritması :
+-  ![image](https://github.com/user-attachments/assets/aaf93709-2e79-4465-8746-ba000968f511)
 
 ---
 
