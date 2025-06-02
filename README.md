@@ -29,26 +29,19 @@ Bu proje, dinamik kısıtlar altında birden fazla drone’un teslimat görevler
 ```
 
 ## ▶️ Kurulum ve Çalıştırma
-
-1. Gerekli kütüphaneleri yükleyin:
-
-```bash
-pip install -r requirements.txt
-```
-
-2. Senaryo verisi oluşturmak için:
-
+1. Senaryo verisi oluşturmak için:
+2. 
 ```bash
 python randomdata.py
 ```
 
-3. Genetik Algoritma + görselleştirme çalıştırmak için:
+2. Genetik Algoritma + görselleştirme çalıştırmak için:
 
 ```bash
 python ga_gorsel.py
 ```
 
-4. A* + görselleştirme çalıştırmak için:
+3. A* + görselleştirme çalıştırmak için:
 
 ```bash
 python gorsel.py
@@ -60,7 +53,6 @@ python gorsel.py
 
 - Simülasyon saati 10:00’da başlar.
 - Teslimatlar yalnızca kendi zaman penceresinde çizilir.
-- Aynı anda en fazla 3 görev aktif olarak gösterilir.
 - Yasaklı bölgeler **aktif olduklarında kırmızı**, **pasif olduklarında gri** olarak çizilir.
 
 ### 🛰️ Drone – Teslimat Atamaları
